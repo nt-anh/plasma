@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plasma, the fourth state</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a curious physics teacher at the bench — clear, lively, exact.
+   IDEA: a glass discharge chamber you heat yourself and watch the atoms come apart.
+   PICTURE: a live particle chamber: lattice → liquid → gas → glowing plasma with free electrons and ions.
+   COLOUR and TYPE: deep chamber night, electron cyan, ion coral, atom lilac, plasma magenta glow; Sora + Inter.
+   LAYOUT: title, then chamber + control panel side by side; particle guide; application cards with a detail panel. */
+:root{color-scheme:light dark;--bg:light-dark(#f4f2fa,#0f0c1d);--ink:light-dark(#17132b,#ece9fb);--mute:light-dark(#57516f,#a9a3c4);--panel:light-dark(#fff,#181430);--line:light-dark(#dcd7ec,#2c2650);
+--e:#2fd3ff;--ion:#ff6a3d;--atom:#b4adff;--glow:#ff3fa4;--chamber:#0b0918}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Sora,Inter,sans-serif;line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,5vw,50px)}h2{font-size:clamp(26px,3.4vw,36px)}h3{font-size:20px}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+.lede{color:var(--mute);max-width:68ch;margin:12px 0 0;font-size:17px}
+.stage{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:20px;margin-top:24px}
+.fig{position:relative;aspect-ratio:5/3;border-radius:18px;overflow:hidden;background:var(--chamber);box-shadow:0 20px 50px -20px #1a0b3a88,inset 0 0 0 1px #ffffff14}
+.fig>canvas{position:absolute;inset:0;width:100%;height:100%}
+.tag{position:absolute;left:16px;top:12px;font:600 15px Sora,sans-serif;color:#fff;opacity:.9}
+.pause{position:absolute;right:10px;top:8px;background:#ffffff1a;color:#fff;border:0;border-radius:10px;min-height:36px;padding:0 12px;font:500 14px Inter,sans-serif;cursor:pointer}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+button{font:inherit;color:inherit}
+.ph{min-height:44px;border:1px solid var(--line);background:transparent;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
+.ph.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ph:focus-visible,.chip:focus-visible,.card:focus-visible,.go:focus-visible,.pause:focus-visible,input:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
+label.h{font-size:14px;color:var(--mute);display:flex;justify-content:space-between}
+input[type=range]{width:100%;height:44px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:9px;background:linear-gradient(90deg,#5d8bff,#7fd4ff 30%,#ffb35c 62%,#ff3fa4)}
+input[type=range]::-moz-range-track{height:10px;border-radius:9px;background:linear-gradient(90deg,#5d8bff,#7fd4ff 30%,#ffb35c 62%,#ff3fa4)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;margin-top:-8px;border-radius:50%;background:#fff;border:3px solid var(--ink)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--ink)}
+.go{min-height:44px;border:0;border-radius:12px;background:var(--glow);color:#fff;font-weight:600;cursor:pointer}
+#phText{margin:0;font-size:15.5px}
+.counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.counts div{border-radius:12px;padding:8px 4px;background:light-dark(#f3f1fa,#100d22)}
+.counts b{display:block;font:700 22px Sora,sans-serif}.counts span{font-size:13px;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500;font-size:15px}
+.chip.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.gloss{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:22px}
+.gl{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;transition:opacity .2s}
+.gl.dim{opacity:.4}.gl p{margin:8px 0 0;font-size:15px;color:var(--mute)}
+.gl h3{display:flex;align-items:center;gap:10px;font-size:18px}
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:22px}
+.card{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 14px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+.card svg{width:100%;height:auto;border-radius:10px;background:var(--chamber)}
+.card.on{border-color:var(--glow);box-shadow:0 0 0 2px var(--glow)}
+.card b{font-family:Sora,sans-serif;font-size:16px}.card small{color:var(--mute);font-size:13px}
+.detail{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,28px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px}
+.detail .big svg{width:100%;height:auto;border-radius:14px;background:var(--chamber)}
+.detail p{margin:10px 0 0}.meta{color:var(--mute);font-size:14px;margin-top:6px}
+.role{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:12px 0;border-top:1px solid var(--line)}
+.role:first-of-type{margin-top:14px}.role .dot{margin-top:5px}.role p{margin:0;font-size:15px}.role strong{display:block;font-size:14px}
+.note{font-size:13px;color:var(--mute);margin-top:16px}
+@media(max-width:900px){.stage,.detail{grid-template-columns:minmax(0,1fr)}.gloss{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.gloss{grid-template-columns:minmax(0,1fr)}.ph{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.gl{transition:none}}
+</style>
+</head>
+<body>
+<section class="band"><div class="wrap">
+<h1>Plasma: what happens when a gas gets too hot to hold its electrons</h1>
+<p class="lede">Plasma is the fourth state of matter. Keep adding heat to a gas and its atoms collide so hard that electrons are knocked off. What's left is a glowing soup of free electrons and positive ions. Drag the heat slider or tap a state to watch it happen.</p>
+
+<div class="stage">
+  <div class="fig" id="fig"><canvas id="sim" aria-label="Animated particle chamber showing atoms changing state as heat is added"></canvas><span class="tag" id="tag">Solid</span><button class="pause" id="pause" type="button">Pause</button></div>
+  <div class="panel">
+    <div class="phases" role="group" aria-label="States of matter">
+      <button class="ph" data-t="8" type="button">Solid</button><button class="ph" data-t="37" type="button">Liquid</button><button class="ph" data-t="62" type="button">Gas</button><button class="ph" data-t="100" type="button">Plasma</button>
+    </div>
+    <div><label class="h" for="heat"><span>Heat added</span><span id="pct">8%</span></label><input id="heat" type="range" min="0" max="100" value="8"></div>
+    <button class="go" id="play" type="button">Heat it up from cold ▸</button>
+    <h3 id="phTitle">Solid</h3>
+    <p id="phText"></p>
+    <div class="counts"><div><b id="cA">40</b><span>neutral atoms</span></div><div><b id="cI" style="color:var(--ion)">0</b><span>ions</span></div><div><b id="cE" style="color:var(--e)">0</b><span>free electrons</span></div></div>
+  </div>
+</div>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap">
+<h2>What's in the soup</h2>
+<p class="lede">Tap a particle to highlight it in the chamber above.</p>
+<div class="chips" id="chips"></div>
+<div class="gloss" id="gloss"></div>
+</div></section>
+
+<section class="band" style="padding-top:0"><div class="wrap">
+<h2>Where plasma works for us</h2>
+<p class="lede">Over 99% of the visible universe is plasma, and we've learned to put it to work. Pick an example to see what the electrons, ions and heavy particles each do.</p>
+<div class="apps" id="apps"></div>
+<div class="detail" id="detail" aria-live="polite"></div>
+<p class="note">Particle counts and speeds in the chamber are illustrative, not to scale. Real plasmas can also be made with strong electric fields rather than heat alone, which is how neon signs and chip-making plasmas work.</p>
+</div></section>
+
+<script>
+{
+const P={
+ atom:{n:'Atom',c:'var(--atom)',t:'A neutral atom: a positive nucleus with its electrons bound around it. The charges balance, so it has no overall charge. In a gas, every particle is like this.'},
+ electron:{n:'Electron',c:'var(--e)',t:'Tiny and negatively charged, about 1/1836 the mass of a proton. In plasma they break free and race around, carrying electric current and causing the collisions that make plasma glow.'},
+ ion:{n:'Ion',c:'var(--ion)',t:'An atom that has lost one or more electrons, so it is positively charged. Electric and magnetic fields push ions around, which is how engineers steer and shape plasma.'},
+ heavy:{n:'Heavy particles',c:'linear-gradient(90deg,var(--atom) 50%,var(--ion) 50%)',t:'Everything that isn\'t an electron: ions plus neutral atoms and molecules. They carry almost all the mass. In "cold" plasmas the electrons can be tens of thousands of degrees while the heavy particles stay near room temperature.'}
+};
+const PH=[
+ ['Solid','Atoms are locked in a lattice. Adding heat only makes them vibrate harder in place.'],
+ ['Liquid','The bonds loosen. Atoms slide past one another but still cling together and settle at the bottom.'],
+ ['Gas','Atoms break free and fly around, filling the whole container. Each one is still neutral: every electron is still bound to its nucleus.'],
+ ['Plasma','Collisions are now violent enough to knock electrons off. You get a glowing soup of free electrons and positive ions. Overall it is still neutral, but because its particles are charged, plasma conducts electricity and responds to magnetic fields.']
+];
+const AP=[
+ {id:'neon',n:'Neon signs & fluorescent lights',k:'Cold plasma',temp:'Electrons ~10,000+ °C, glass stays warm',s:'A voltage across a tube of low-pressure gas creates a plasma. Each gas glows its own colour: neon red-orange, argon blue.',e:'The electric field speeds electrons up; they slam into gas atoms and bump their bound electrons to higher energy levels.',i:'Ions drift to the negative electrode and knock out fresh electrons, keeping the discharge going.',h:'Excited neon or mercury atoms release light as their electrons drop back. In fluorescent tubes that light is UV, which a phosphor coating turns visible.',
+  svg:'<rect x="14" y="32" width="132" height="26" rx="13" fill="#ff5b3d33" stroke="#ff7a52" stroke-width="2"/><rect x="20" y="38" width="120" height="14" rx="7" fill="#ff6a3d" opacity=".7"/><circle cx="40" cy="45" r="3" fill="#2fd3ff"/><circle cx="76" cy="42" r="3" fill="#2fd3ff"/><circle cx="110" cy="48" r="3" fill="#2fd3ff"/><circle cx="58" cy="46" r="5" fill="#b4adff"/><circle cx="94" cy="44" r="5" fill="#b4adff"/>'},
+ {id:'sun',n:'The Sun & stars',k:'Hot plasma',temp:'Core ~15 million °C',s:'Stars are giant balls of plasma. The heat is so intense that hydrogen is almost completely stripped of its electrons.',e:'Free electrons scatter light and carry heat outward through the star.',i:'Bare hydrogen nuclei (protons) collide fast enough to fuse into helium, releasing the energy that makes sunlight.',h:'Almost all the star\'s mass is in its heavy particles; their fusion is the power source.',
+  svg:'<circle cx="80" cy="45" r="34" fill="#ff3fa422"/><circle cx="80" cy="45" r="26" fill="#ffb35c"/><circle cx="80" cy="45" r="16" fill="#ffd27a"/><circle cx="64" cy="38" r="2.5" fill="#2fd3ff"/><circle cx="96" cy="54" r="2.5" fill="#2fd3ff"/><circle cx="86" cy="34" r="3.5" fill="#ff6a3d"/>'},
+ {id:'lightning',n:'Lightning',k:'Hot plasma',temp:'Channel ~30,000 °C',s:'A huge voltage between cloud and ground rips electrons from air molecules, creating a narrow plasma channel for a split second.',e:'Avalanches of electrons carry the enormous current down the channel.',i:'Ionised nitrogen and oxygen make the channel conductive and emit the bright white-blue flash.',h:'Air heats so fast it expands explosively: the shock wave is thunder.',
+  svg:'<rect width="160" height="22" fill="#2a2450"/><path d="M84 18 L70 48 L84 48 L72 82 L100 40 L86 40 L96 18Z" fill="#ffffff" stroke="#b4adff" stroke-width="2"/><circle cx="60" cy="60" r="2.5" fill="#2fd3ff"/><circle cx="108" cy="30" r="2.5" fill="#2fd3ff"/>'},
+ {id:'aurora',n:'Auroras',k:'Space plasma',temp:'Thin, upper-atmosphere plasma',s:'The solar wind is a stream of plasma from the Sun. Earth\'s magnetic field funnels its particles toward the poles.',e:'Fast electrons crash into oxygen and nitrogen high in the atmosphere, exciting them.',i:'Charged particles spiral along magnetic field lines, which is why auroras form ovals around the poles.',h:'Excited oxygen glows green or red; nitrogen adds blue and purple.',
+  svg:'<path d="M0 30 Q40 10 80 30 T160 26" stroke="#3dff9c" stroke-width="8" fill="none" opacity=".7"/><path d="M0 42 Q40 22 80 42 T160 38" stroke="#ff3fa4" stroke-width="5" fill="none" opacity=".5"/><path d="M0 90 L30 70 L60 82 L100 64 L140 80 L160 72 L160 90Z" fill="#1d1838"/>'},
+ {id:'chips',n:'Making computer chips',k:'Cold plasma',temp:'Wafer near room temperature',s:'Plasma etching carves the billions of tiny features in a processor. Almost every chip in your phone was shaped by plasma.',e:'Electrons break reactive gas molecules (like fluorine compounds) into fragments, keeping the plasma alive.',i:'Ions are accelerated straight down onto the wafer, so etching goes vertically and features stay sharp.',h:'Neutral reactive fragments (radicals) chemically eat away the exposed material.',
+  svg:'<rect x="30" y="60" width="100" height="14" fill="#7b74b8"/><rect x="40" y="52" width="16" height="8" fill="#b4adff"/><rect x="72" y="52" width="16" height="8" fill="#b4adff"/><rect x="104" y="52" width="16" height="8" fill="#b4adff"/><g stroke="#ff6a3d" stroke-width="2"><path d="M64 14 V44"/><path d="M96 14 V44"/></g><circle cx="64" cy="12" r="4" fill="#ff6a3d"/><circle cx="96" cy="12" r="4" fill="#ff6a3d"/><circle cx="80" cy="24" r="2.5" fill="#2fd3ff"/>'},
+ {id:'cut',n:'Plasma cutting & welding',k:'Hot plasma',temp:'Jet above 20,000 °C',s:'An electric arc turns a gas jet into plasma hot enough to slice through thick steel.',e:'Electrons carry the arc current between torch and metal, pumping in energy.',i:'Ions and the hot gas form a fast, narrow jet focused by the nozzle.',h:'The heavy particles deliver heat and momentum, melting the metal and blowing it out of the cut.',
+  svg:'<path d="M66 6 H94 L88 34 H72Z" fill="#7b74b8"/><path d="M76 34 L84 34 L82 64 L78 64Z" fill="#ff3fa4"/><path d="M78 34 L82 34 L81 64 L79 64Z" fill="#fff"/><rect x="20" y="64" width="120" height="12" fill="#5a5470"/><circle cx="72" cy="60" r="3" fill="#ffb35c"/><circle cx="90" cy="58" r="2" fill="#ffb35c"/>'},
+ {id:'fusion',n:'Fusion energy',k:'Hot plasma',temp:'~150 million °C (10× the Sun\'s core)',s:'Fusion reactors such as tokamaks try to recreate the Sun on Earth, using magnets to hold a ring of plasma away from the walls.',e:'Electrons help carry the current that heats and shapes the plasma.',i:'Ions are charged, so strong magnetic fields can trap them — no material wall could survive the heat.',h:'Deuterium and tritium nuclei fuse, releasing energy as fast neutrons that heat the surrounding blanket.',
+  svg:'<ellipse cx="80" cy="45" rx="62" ry="28" fill="none" stroke="#7b74b8" stroke-width="12"/><ellipse cx="80" cy="45" rx="62" ry="28" fill="none" stroke="#ff3fa4" stroke-width="4"/><ellipse cx="80" cy="45" rx="30" ry="10" fill="#0b0918"/>'},
+ {id:'thruster',n:'Spacecraft ion engines',k:'Cold plasma',temp:'Gentle but extremely efficient',s:'Ion thrusters ionise xenon and fire the ions out the back. The push is tiny, but it lasts for months on little fuel.',e:'Electrons ionise the xenon; a second electron source is sprayed into the beam so the spacecraft doesn\'t build up charge.',i:'Xenon ions are accelerated by electric grids to around 30 km/s — several times faster than chemical rocket exhaust.',h:'Xenon is used because its atoms are heavy and easy to ionise, giving more push per atom.',
+  svg:'<rect x="20" y="28" width="46" height="34" rx="6" fill="#7b74b8"/><rect x="66" y="24" width="8" height="42" fill="#b4adff"/><path d="M74 30 L150 18 L150 72 L74 60Z" fill="#2fd3ff33"/><circle cx="96" cy="40" r="3.5" fill="#ff6a3d"/><circle cx="118" cy="50" r="3.5" fill="#ff6a3d"/><circle cx="138" cy="38" r="3.5" fill="#ff6a3d"/><circle cx="108" cy="58" r="2.5" fill="#2fd3ff"/>'},
+ {id:'medical',n:'Sterilising & plasma medicine',k:'Cold plasma',temp:'Safe to touch (~room temperature)',s:'Cold atmospheric plasma kills bacteria on tools, food packaging and even wounds without heating them.',e:'Hot electrons split air molecules into reactive oxygen and nitrogen species and produce UV light.',i:'Ions and charged species damage bacterial cell walls.',h:'Because the heavy particles stay cool, the plasma doesn\'t burn skin or melt plastic.',
+  svg:'<rect x="66" y="6" width="28" height="30" rx="5" fill="#7b74b8"/><path d="M74 36 L86 36 L96 62 L64 62Z" fill="#8b7cff55"/><ellipse cx="80" cy="70" rx="46" ry="8" fill="#5a5470"/><circle cx="74" cy="50" r="2.5" fill="#2fd3ff"/><circle cx="86" cy="54" r="2.5" fill="#ff6a3d"/>'}
+];
+const $=id=>document.getElementById(id);
+const sv=s=>`<svg viewBox="0 0 160 90" role="img" aria-hidden="true">${s}</svg>`;
+let hl=null,app='neon';
+const renderChips=()=>{
+ $('chips').innerHTML=Object.entries(P).map(([k,p])=>`<button class="chip${hl===k?' on':''}" data-k="${k}" type="button" aria-pressed="${hl===k}"><span class="dot" style="background:${p.c}"></span>${p.n}</button>`).join('');
+ $('gloss').innerHTML=Object.entries(P).map(([k,p])=>`<div class="gl${hl&&hl!==k?' dim':''}"><h3><span class="dot" style="background:${p.c}"></span>${p.n}</h3><p>${p.t}</p></div>`).join('');
+};
+$('chips').addEventListener('click',ev=>{const b=ev.target.closest('.chip');if(!b)return;hl=hl===b.dataset.k?null:b.dataset.k;renderChips();if(innerWidth<900)$('fig').scrollIntoView({behavior:'smooth',block:'center'})});
+renderChips();
+const renderApps=()=>{
+ $('apps').innerHTML=AP.map(a=>`<button class="card${a.id===app?' on':''}" data-id="${a.id}" type="button">${sv(a.svg)}<b>${a.n}</b><small>${a.k}</small></button>`).join('');
+ const a=AP.find(x=>x.id===app);
+ const role=(c,t,x)=>`<div class="role"><span class="dot" style="background:${c}"></span><div><strong>${t}</strong><p>${x}</p></div></div>`;
+ $('detail').innerHTML=`<div class="big">${sv(a.svg)}</div><div><h3>${a.n}</h3><div class="meta">${a.k} · ${a.temp}</div><p>${a.s}</p>${role('var(--e)','Electrons',a.e)}${role('var(--ion)','Ions',a.i)}${role(P.heavy.c,'Heavy particles (ions + neutral atoms)',a.h)}</div>`;
+};
+$('apps').addEventListener('click',ev=>{const b=ev.target.closest('.card');if(!b)return;app=b.dataset.id;renderApps();$('detail').scrollIntoView({behavior:'smooth',block:'nearest'})});
+renderApps();
+
+const cv=$('sim'),cx=cv.getContext('2d');let W=1,H=1,dpr=1;
+const fit=()=>{W=cv.clientWidth||1;H=cv.clientHeight||1;dpr=devicePixelRatio||1;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)};
+const ro=new ResizeObserver(fit);ro.observe(cv);fit();
+const N=40,A=[],rk=[...Array(N).keys()].sort(()=>Math.random()-.5);
+for(let i=0;i<N;i++){const hx=304+56*(i%8),hy=540-56*Math.floor(i/8);A.push({x:hx,y:hy,vx:0,vy:0,hx,hy,rk:rk[i],ion:false,free:false,a:Math.random()*6.28,ex:0,ey:0,evx:0,evy:0})}
+let Tt=8,T=8,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,last=performance.now(),play=null,lastPh=-1;
+const phase=t=>t<25?0:t<50?1:t<76?2:3,R=()=>Math.random()-.5;
+const setT=v=>{Tt=v;$('heat').value=Math.round(v);$('pct').textContent=Math.round(v)+'%'};
+const wall=(o,xk,yk,vxk,vyk,r)=>{if(o[xk]<r){o[xk]=r;o[vxk]=Math.abs(o[vxk])}if(o[xk]>1000-r){o[xk]=1000-r;o[vxk]=-Math.abs(o[vxk])}if(o[yk]<r){o[yk]=r;o[vyk]=Math.abs(o[vyk])}if(o[yk]>600-r){o[yk]=600-r;o[vyk]=-Math.abs(o[vyk])}};
+const step=dt=>{
+ T+=(Tt-T)*Math.min(1,dt*2.5);
+ const ph=phase(T),f=Math.max(0,Math.min(1,(T-76)/20)),vt=40+T*5,nI=Math.round(f*N);
+ if(ph>=1){for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const p=A[i],q=A[j],dx=q.x-p.x,dy=q.y-p.y,d=Math.hypot(dx,dy)||1;let F=0;if(d<34)F=-(34-d)*40;else if(ph===1&&d<62)F=(d-34)*5;if(F){const fx=F*dx/d*dt,fy=F*dy/d*dt;p.vx+=fx;p.vy+=fy;q.vx-=fx;q.vy-=fy}}}
+ for(const a of A){
+  let ax,ay;
+  if(ph===0){ax=-80*(a.x-a.hx)-6*a.vx+R()*(200+T*120);ay=-80*(a.y-a.hy)-6*a.vy+R()*(200+T*120)}
+  else if(ph===1){ax=-1.5*a.vx+R()*T*60;ay=320-1.5*a.vy+R()*T*60}
+  else{const sp=Math.hypot(a.vx,a.vy)||1,k=(vt-sp)*2;ax=a.vx/sp*k+R()*300;ay=a.vy/sp*k+R()*300}
+  a.vx+=ax*dt;a.vy+=ay*dt;a.x+=a.vx*dt;a.y+=a.vy*dt;wall(a,'x','y','vx','vy',14);
+  const want=a.rk<nI;
+  if(want&&!a.ion){a.ion=a.free=true;const th=Math.random()*6.28;a.ex=a.x+Math.cos(a.a)*22;a.ey=a.y+Math.sin(a.a)*22;a.evx=Math.cos(th)*vt*2.6;a.evy=Math.sin(th)*vt*2.6}
+  if(a.free){
+   if(want){const sp=Math.hypot(a.evx,a.evy)||1,k=(vt*2.6-sp)*3;a.evx+=a.evx/sp*k*dt;a.evy+=a.evy/sp*k*dt}
+   else{const dx=a.x-a.ex,dy=a.y-a.ey,d=Math.hypot(dx,dy)||1;a.evx+=(dx/d*2400-a.evx*2)*dt;a.evy+=(dy/d*2400-a.evy*2)*dt;if(d<22){a.free=a.ion=false}}
+   a.ex+=a.evx*dt;a.ey+=a.evy*dt;wall(a,'ex','ey','evx','evy',4);
+  }else a.a+=(3+T*.06)*dt;
+ }
+};
+const al=k=>!hl||hl===k||(hl==='heavy'&&(k==='atom'||k==='ion'))?1:.13;
+const draw=()=>{
+ const s=W/1000;cx.setTransform(dpr*s,0,0,dpr*s,0,0);
+ cx.fillStyle='#0b0918';cx.fillRect(0,0,1000,600);
+ const f=Math.max(0,Math.min(1,(T-76)/20));
+ if(f>0){const g=cx.createRadialGradient(500,300,40,500,300,620);g.addColorStop(0,`rgba(255,63,164,${.34*f})`);g.addColorStop(1,'rgba(255,63,164,0)');cx.fillStyle=g;cx.fillRect(0,0,1000,600)}
+ cx.strokeStyle='#ffffff10';cx.lineWidth=1;for(let x=50;x<1000;x+=50){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,600);cx.stroke()}for(let y=50;y<600;y+=50){cx.beginPath();cx.moveTo(0,y);cx.lineTo(1000,y);cx.stroke()}
+ let nA=0,nI=0,nE=0;
+ for(const a of A){
+  if(!a.ion){nA++;cx.globalAlpha=al('atom');cx.strokeStyle='#b4adff55';cx.lineWidth=1.5;cx.beginPath();cx.arc(a.x,a.y,22,0,6.29);cx.stroke();
+   cx.fillStyle='#b4adff';cx.beginPath();cx.arc(a.x,a.y,9,0,6.29);cx.fill();
+   cx.globalAlpha=!hl||hl!=='ion'?1:.13;cx.fillStyle='#2fd3ff';cx.beginPath();cx.arc(a.x+Math.cos(a.a)*22,a.y+Math.sin(a.a)*22,4,0,6.29);cx.fill()}
+  else{nI++;cx.globalAlpha=al('ion');cx.shadowColor='#ff6a3d';cx.shadowBlur=18;cx.fillStyle='#ff6a3d';cx.beginPath();cx.arc(a.x,a.y,11,0,6.29);cx.fill();cx.shadowBlur=0;
+   cx.strokeStyle='#fff';cx.lineWidth=2.5;cx.beginPath();cx.moveTo(a.x-5,a.y);cx.lineTo(a.x+5,a.y);cx.moveTo(a.x,a.y-5);cx.lineTo(a.x,a.y+5);cx.stroke()}
+  if(a.free){nE++;cx.globalAlpha=al('electron');cx.strokeStyle='#2fd3ff66';cx.lineWidth=3;cx.beginPath();cx.moveTo(a.ex-a.evx*.05,a.ey-a.evy*.05);cx.lineTo(a.ex,a.ey);cx.stroke();
+   cx.shadowColor='#2fd3ff';cx.shadowBlur=12;cx.fillStyle='#2fd3ff';cx.beginPath();cx.arc(a.ex,a.ey,4.5,0,6.29);cx.fill();cx.shadowBlur=0}
+ }
+ cx.globalAlpha=1;
+ $('cA').textContent=nA;$('cI').textContent=nI;$('cE').textContent=nE;
+ const ph=phase(T);
+ if(ph!==lastPh){lastPh=ph;$('tag').textContent=PH[ph][0];$('phTitle').textContent=PH[ph][0];$('phText').textContent=PH[ph][1];document.querySelectorAll('.ph').forEach((b,i)=>b.classList.toggle('on',i===ph))}
+};
+const loop=now=>{const dt=Math.min(.033,(now-last)/1000);last=now;
+ if(play){const v=Math.min(100,(now-play)/90);setT(v);if(v>=100)play=null}
+ if(!paused){step(dt/2);step(dt/2)}draw();requestAnimationFrame(loop)};
+document.querySelectorAll('.ph').forEach(b=>b.addEventListener('click',()=>{play=null;setT(+b.dataset.t);if(paused){T=Tt;step(.016)}}));
+$('heat').addEventListener('input',e=>{play=null;setT(+e.target.value)});
+$('play').addEventListener('click',()=>{paused=false;$('pause').textContent='Pause';T=0;setT(0);play=performance.now()});
+$('pause').addEventListener('click',()=>{paused=!paused;$('pause').textContent=paused?'Play':'Pause'});
+$('pause').textContent=paused?'Play':'Pause';
+$('phText').textContent=PH[0][1];
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
